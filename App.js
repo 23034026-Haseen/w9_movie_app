@@ -5,114 +5,110 @@ import {
   Text,
   TextInput,
   View,
-  Image,
   StyleSheet
 } from 'react-native';
 
-// global variable to store original data for filtering
-let originalData = [];
-
 const App = () => {
   const [mydata, setMydata] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
+  const [searchText, setSearchText] = useState('');
 
-  // Week 08 Web Service (Movie database)
-  const myurl = "https://w8-movie.onrender.com/movies";
+  const myurl = "https://w9-movie-app.onrender.com/movies";
 
-  // run once on first render to fetch data from Week 08 web service
+  // Fetch movies from API
   useEffect(() => {
     fetch(myurl)
-      .then((response) => response.json())
-      .then((myJson) => {
-        setMydata(myJson);
-        originalData = myJson;
+      .then(res => res.json())
+      .then(json => {
+        console.log("API response:", json);
+        // Ensure we get an array
+        const data = Array.isArray(json) ? json : json.movies || [];
+        setMydata(data);
+        setOriginalData(data);
       })
-      .catch((error) => {
-        console.error(error);
-      });
+      .catch(err => console.error("Fetch error:", err));
   }, []);
 
-  // case-insensitive search filter
-  const FilterData = (text) => {
-    if (text !== '') {
-      let myFilteredData = originalData.filter((item) =>
-        item.title.toLowerCase().includes(text.toLowerCase())
-      );
-      setMydata(myFilteredData);
-    } else {
-      setMydata(originalData);
-    }
-  };
+  // Filter movies when search text changes
+  useEffect(() => {
+    if (!Array.isArray(originalData)) return;
 
-  // render each item in the List View
-  const renderItem = ({ item }) => {
-    return (
-      <View style={styles.card}>
-        <Image
-          source={{
-            uri: "https://via.placeholder.com/80"
-          }}
-          style={styles.image}
-        />
-        <View>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text>{item.genre} ({item.year})</Text>
-        </View>
-      </View>
+    if (searchText === '') {
+      setMydata(originalData);
+      return;
+    }
+
+    const filtered = originalData.filter(item =>
+      item.title.toLowerCase().includes(searchText.toLowerCase())
     );
-  };
+
+    setMydata(filtered);
+  }, [searchText, originalData]);
+
+  // Render each movie
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      <Text style={styles.title}>{item.title}</Text>
+      <Text>{item.genre} ({item.year})</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <StatusBar />
-
-      <Text style={styles.header}>
-        Week 09 – Movie List (Data from Week 08 Web Service)
-      </Text>
+      <Text style={styles.header}>Search Movies</Text>
 
       <TextInput
         style={styles.searchBox}
         placeholder="Type movie title..."
-        onChangeText={(text) => FilterData(text)}
+        value={searchText}
+        onChangeText={setSearchText}
       />
 
-      {/* List View displaying data from Week 08 database */}
-      <FlatList
-        data={mydata}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      {/* FlatList needs a container with flex: 1 to display properly */}
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={mydata}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id?.toString() || item.title}
+          ListEmptyComponent={
+            <Text style={{ textAlign: 'center', marginTop: 20 }}>
+              No movies found
+            </Text>
+          }
+        />
+      </View>
     </View>
   );
 };
 
 export default App;
 
-// 🎨 STYLES
+// Styles
 const styles = StyleSheet.create({
   container: {
-    padding: 10
+    padding: 10,
+    flex: 1,
+    backgroundColor: '#fff'
   },
   header: {
-    fontSize: 18,
-    marginBottom: 5,
-    fontWeight: 'bold'
+    fontSize: 20,
+    marginBottom: 10,
+    fontWeight: 'bold',
+    textAlign: 'center'
   },
   searchBox: {
     borderWidth: 1,
-    padding: 8,
-    marginBottom: 10
+    padding: 10,
+    marginBottom: 15,
+    borderRadius: 5
   },
   card: {
-    flexDirection: 'row',
     padding: 10,
-    marginBottom: 8,
+    marginBottom: 10,
     borderWidth: 1,
-    alignItems: 'center'
-  },
-  image: {
-    width: 80,
-    height: 80,
-    marginRight: 10
+    borderRadius: 5,
+    backgroundColor: '#f9f9f9'
   },
   title: {
     fontSize: 16,
