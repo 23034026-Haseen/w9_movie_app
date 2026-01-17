@@ -13,33 +13,35 @@ const App = () => {
   const [mydata, setMydata] = useState([]);
   const [originalData, setOriginalData] = useState([]);
 
-  // Replace with your deployed server URL
+  // ========== REPLACE WITH YOUR DEPLOYED SERVER URL ==========
   const myurl = "https://your-server.onrender.com/movies";
+  // =========================================================
 
-  // fetch data once
   useEffect(() => {
     fetch(myurl)
-      .then((response) => response.json())
-      .then((json) => {
-        const data = Array.isArray(json) ? json : []; // safety check
-        setMydata(data);
-        setOriginalData(data);
+      .then(async (response) => {
+        const text = await response.text(); // read raw response
+        try {
+          const json = JSON.parse(text); // parse JSON
+          const data = Array.isArray(json) ? json : [];
+          setMydata(data);
+          setOriginalData(data);
+        } catch (e) {
+          console.error("Invalid JSON from API:", text);
+        }
       })
-      .catch((error) => console.error(error));
+      .catch((error) => console.error("Fetch error:", error));
   }, []);
 
-  // filter search
   const FilterData = (text) => {
-    if (!Array.isArray(originalData)) return; // safety check
+    if (!Array.isArray(originalData)) return;
     if (text === '') {
       setMydata(originalData);
       return;
     }
-
     const filtered = originalData.filter((item) =>
       item.title.toLowerCase().includes(text.toLowerCase())
     );
-
     setMydata(filtered);
   };
 
@@ -71,7 +73,11 @@ const App = () => {
         data={mydata}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
-        ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>No movies found</Text>}
+        ListEmptyComponent={
+          <Text style={{ textAlign: 'center', marginTop: 20 }}>
+            No movies found
+          </Text>
+        }
       />
     </View>
   );
@@ -79,7 +85,6 @@ const App = () => {
 
 export default App;
 
-// styles
 const styles = StyleSheet.create({
   container: {
     padding: 10,
