@@ -14,7 +14,7 @@ const App = () => {
   const [originalData, setOriginalData] = useState([]);
 
   // ========== REPLACE WITH YOUR DEPLOYED SERVER URL ==========
-  const myurl = "https://your-server.onrender.com/movies";
+  const myurl = "https://w9-movie-app.onrender.com/movies";
   // =========================================================
 
   useEffect(() => {
