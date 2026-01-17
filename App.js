@@ -9,32 +9,28 @@ import {
   StyleSheet
 } from 'react-native';
 
-// Online images for the movies
-const images = {
-  Inception: "https://m.media-amazon.com/images/I/51v5ZpFyaFL._AC_SY679_.jpg",
-  Avengers: "https://m.media-amazon.com/images/I/81ExhpBEbHL._AC_SY679_.jpg",
-  Interstellar: "https://m.media-amazon.com/images/I/91kFYg4fX3L._AC_SY679_.jpg",
-};
-
 const App = () => {
   const [mydata, setMydata] = useState([]);
   const [originalData, setOriginalData] = useState([]);
 
-  const myurl = "https://w9-movie-app.onrender.com/movies";
+  // Replace with your deployed server URL
+  const myurl = "https://your-server.onrender.com/movies";
 
   // fetch data once
   useEffect(() => {
     fetch(myurl)
       .then((response) => response.json())
       .then((json) => {
-        setMydata(json);
-        setOriginalData(json);
+        const data = Array.isArray(json) ? json : []; // safety check
+        setMydata(data);
+        setOriginalData(data);
       })
       .catch((error) => console.error(error));
   }, []);
 
   // filter search
   const FilterData = (text) => {
+    if (!Array.isArray(originalData)) return; // safety check
     if (text === '') {
       setMydata(originalData);
       return;
@@ -50,7 +46,7 @@ const App = () => {
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <Image
-        source={{ uri: images[item.title] }}
+        source={{ uri: item.image_url }}
         style={styles.image}
       />
       <View>
@@ -75,6 +71,7 @@ const App = () => {
         data={mydata}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
+        ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>No movies found</Text>}
       />
     </View>
   );
@@ -85,28 +82,36 @@ export default App;
 // styles
 const styles = StyleSheet.create({
   container: {
-    padding: 10
+    padding: 10,
+    flex: 1,
+    backgroundColor: '#fff'
   },
   header: {
     fontSize: 18,
-    marginBottom: 8
+    marginBottom: 8,
+    fontWeight: 'bold',
+    textAlign: 'center'
   },
   searchBox: {
     borderWidth: 1,
     padding: 8,
-    marginBottom: 10
+    marginBottom: 10,
+    borderRadius: 5
   },
   card: {
     flexDirection: 'row',
     padding: 10,
     marginBottom: 8,
     borderWidth: 1,
-    alignItems: 'center'
+    borderRadius: 5,
+    alignItems: 'center',
+    backgroundColor: '#f9f9f9'
   },
   image: {
     width: 80,
-    height: 120, // taller for posters
-    marginRight: 10
+    height: 120,
+    marginRight: 10,
+    borderRadius: 5
   },
   title: {
     fontSize: 16,
