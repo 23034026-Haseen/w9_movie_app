@@ -12,17 +12,19 @@ import {
 const App = () => {
   const [mydata, setMydata] = useState([]);
   const [originalData, setOriginalData] = useState([]);
+  const [searchText, setSearchText] = useState('');
 
   // ========== REPLACE WITH YOUR DEPLOYED SERVER URL ==========
   const myurl = "https://w9-movie-app.onrender.com/movies";
   // =========================================================
 
+  // Fetch movies from API
   useEffect(() => {
     fetch(myurl)
       .then(async (response) => {
-        const text = await response.text(); // read raw response
+        const text = await response.text();
         try {
-          const json = JSON.parse(text); // parse JSON
+          const json = JSON.parse(text);
           const data = Array.isArray(json) ? json : [];
           setMydata(data);
           setOriginalData(data);
@@ -33,25 +35,26 @@ const App = () => {
       .catch((error) => console.error("Fetch error:", error));
   }, []);
 
+  // Filter movies as user types
   const FilterData = (text) => {
+    setSearchText(text);
     if (!Array.isArray(originalData)) return;
-    if (text === '') {
-      setMydata(originalData);
-      return;
-    }
+
     const filtered = originalData.filter((item) =>
-      item.title.toLowerCase().includes(text.toLowerCase())
+      item.title?.toLowerCase().includes(text.toLowerCase())
     );
-    setMydata(filtered);
+
+    setMydata(filtered); // show filtered list or empty array
   };
 
+  // Render each movie
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <Image
         source={{ uri: item.image_url }}
         style={styles.image}
       />
-      <View>
+      <View style={{ flex: 1 }}>
         <Text style={styles.title}>{item.title}</Text>
         <Text>{item.genre} ({item.year})</Text>
       </View>
@@ -66,6 +69,7 @@ const App = () => {
       <TextInput
         style={styles.searchBox}
         placeholder="Type movie title..."
+        value={searchText}
         onChangeText={FilterData}
       />
 
@@ -85,32 +89,33 @@ const App = () => {
 
 export default App;
 
+// Styles
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
     flex: 1,
+    padding: 10,
     backgroundColor: '#fff'
   },
   header: {
-    fontSize: 18,
-    marginBottom: 8,
+    fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 10,
     textAlign: 'center'
   },
   searchBox: {
     borderWidth: 1,
-    padding: 8,
-    marginBottom: 10,
+    padding: 10,
+    marginBottom: 15,
     borderRadius: 5
   },
   card: {
     flexDirection: 'row',
     padding: 10,
-    marginBottom: 8,
+    marginBottom: 10,
     borderWidth: 1,
     borderRadius: 5,
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9'
+    backgroundColor: '#f9f9f9',
+    alignItems: 'center'
   },
   image: {
     width: 80,
